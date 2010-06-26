@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+    <head>
+        <script type="text/javascript" src="cpu.js"></script>
+        <script type="text/javascript" src="assemble.js"></script>
+    <script>
+        window.onload = function() {
+            cpu = new Mips();
+			form = document.getElementById("control");
+				form.r1.value= cpu.reg[1];
+				form.r2.value= cpu.reg[2];
+				form.r3.value= cpu.reg[3];
+				form.r4.value= cpu.reg[4];
+				form.r5.value= cpu.reg[5];
+				form.r6.value= cpu.reg[6];
+				form.r7.value= cpu.reg[7];
+				form.r8.value= cpu.reg[8];
+				form.pc.value= cpu.PC;
+        }
+		
+		process = function(form) {
+				cpu.reg[1] = parseInt(form.r1.value);
+				cpu.reg[2] = parseInt(form.r2.value);
+				cpu.reg[3] = parseInt(form.r3.value);
+				cpu.reg[4] = parseInt(form.r4.value);
+				cpu.reg[5] = parseInt(form.r5.value);
+				cpu.reg[6] = parseInt(form.r6.value);
+				cpu.reg[7] = parseInt(form.r7.value);
+				cpu.reg[8] = parseInt(form.r8.value);
+				cpu.PC = parseInt(form.pc.value);
+				document.getElementById("instr").textContent = cpu.step();
+				form.r1.value= cpu.reg[1];
+				form.r2.value= cpu.reg[2];
+				form.r3.value= cpu.reg[3];
+				form.r4.value= cpu.reg[4];
+				form.r5.value= cpu.reg[5];
+				form.r6.value= cpu.reg[6];
+				form.r7.value= cpu.reg[7];
+				form.r8.value= cpu.reg[8];
+				form.pc.value= cpu.PC;
+				document.getElementById("mem").textContent = cpu.mem;
+		}
+
+    </script>
+</head>
+<body>
+		<center>
+				<h1>MIJS</h1>
+				<h2>MIPS In JavaScript</h2>
+		</center>
+
+		<p>
+		<form id="control">
+				<label for="pc">PC</label>
+				<input value="0" name="pc"><br>
+				<label for="r1">Register 1 value:</label> <input cols="3"value="0" name="r1"> <br>
+				<label for="r2">Register 2 value:</label> <input value="0" name="r2"> <br>
+				<label for="r3">Register 3 value:</label> <input value="0" name="r3"> <br>
+				<label for="r4">Register 4 value:</label> <input value="0" name="r4"> <br>
+				<label for="r5">Register 5 value:</label> <input value="0" name="r5"> <br>
+				<label for="r6">Register 6 value:</label> <input value="0" name="r6"> <br>
+				<label for="r7">Register 7 value:</label> <input value="0" name="r7"> <br>
+				<label for="r8">Register 8 value:</label> <input value="0" name="r8"> <br>
+				<input type="button" value="STEP"
+				onClick="process(this.form)" >
+				<span id="instr"> </span>
+		</form>
+
+		</p>
+		<p>
+		<form>
+				<label for="program">Load program</label> <br>
+				<input type="button" value="LOAD" onclick="cpu.load(assemble(this.form.program.value), 4)" >
+				<br>
+				<textarea name="program" cols="80" rows="20">
+0x00002814
+0x0000002a
+0x00003814
+0x0000002c
+0x00a71820
+0x03e00008
+				</textarea> <br>
+		</form>
+		</p>
+		<h3> Contents of memory: </h3>
+		<div id="mem"> </div>
+</body>
+</html>
