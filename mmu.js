@@ -2,6 +2,10 @@
 // single word operations.
 // Probably some sort of mmap and tlb ops too
 
+// In cs241:
+//writing 0xFFFF000C puts to stdout
+//reading 0xFFFF0004 grabs a byte from stdin
+
 function MMU() {
 	// Array of words
 	this.physical = new Array();
