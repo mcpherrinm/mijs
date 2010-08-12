@@ -1,4 +1,4 @@
-/ Create a new MIPS machine with the
+// Create a new MIPS machine with the
 // parameter as an array that is the memory
 // available to the system. It should be an
 // array of 32 bit words.
@@ -52,7 +52,7 @@ function Mips() {
 			if(this.PC == 0x08FFFFFFF) {
 					return this.mipsexception("CPU HALTED");
 			}
-        var op = this.u_int(MMU.read(this.PC));
+        var op = this.u_int(mmu.read(this.PC));
         this.PC = this.u_int(this.PC + 4);
 		this.reg[0] = 0;
         if(op === 0) {
@@ -69,10 +69,10 @@ function Mips() {
         var i = (op & 0x00000FFFF);
         switch(topbits){
         case 0x023: //lw
-            cpu.reg[t] = MMU.read(cpu.reg[s] + i)];
+            cpu.reg[t] = mmu.read(cpu.reg[s] + i);
 			return "lw $" + t + ", " + i + "($" + s + ")";
         case 0x02B: // sw
-			MMU.write(cpu.reg[s] + i, cpu.reg[t]);
+			mmu.write(cpu.reg[s] + i, cpu.reg[t]);
 			return "sw $" + t + ", " + i + "($" + s + ")";
         case 0x04: //beq
             if(cpu.s_reg(s) == cpu.s_reg(t)) {
@@ -121,7 +121,7 @@ function Mips() {
    		return "divu $" + s + ", $" + t;
        case 0x014: //lis
    		// PC has already been incremented, load next word
-   		cpu.reg[d] = MMU.read(cpu.PC)];
+   		cpu.reg[d] = mmu.read(cpu.PC);
 		cpu.PC += 4; // skip data we just loaded
    		return "lis $" + d; 
    	case 0x010: //mfhi $d

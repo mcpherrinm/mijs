@@ -5,9 +5,9 @@
 function MMU() {
 	// Array of words
 	this.physical = new Array();
-	for(var i=0;i<(this.physicalsize/4);i++) this.physical[i] = 0;
 	// Memory size in bytes
 	this.physicalsize = 1024;
+	for(var i=0;i<(this.physicalsize/4);i++) this.physical[i] = 0;
     this.tlblookup = function(addr) {
 		if(addr % 4 != 0) {
 				return cpu.mipsexception("UNALIGNED ACCESS");
