@@ -24,14 +24,15 @@
         <script type="text/javascript" src="cs241mips.js"></script>
     <script>
 
-			loader = function(form, mc) {
-					mc.load(assemble(form.program.value), 0);
-					mc.PC = 0;
-					document.getElementById("mem").innerHtml = cpu.mem;
+			loader = function(form, cpu, mmu) {
+					mmu.load(assemble(form.program.value), 0);
+					cpu.PC = 0;
+					document.getElementById("mem").innerHtml = mmu.physical;
 			}
 
         window.onload = function() {
             cpu = new Mips();
+			mmu = new MMU();
 			form = document.getElementById("control");
 				form.r1.value= cpu.reg[1];
 				form.r2.value= cpu.reg[2];
@@ -195,7 +196,7 @@
 
 		<form>
 				<label for="program">Load program</label> <br>
-				<input type="button" value="LOAD" onclick="loader(this.form, cpu)" >
+				<input type="button" value="LOAD" onclick="loader(this.form, cpu, mmu)" >
 				<br>
 				<textarea id="program" cols="80" rows="20">
 lis $5

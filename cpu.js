@@ -1,4 +1,4 @@
-// Create a new MIPS machine with the
+/ Create a new MIPS machine with the
 // parameter as an array that is the memory
 // available to the system. It should be an
 // array of 32 bit words.
@@ -9,10 +9,7 @@ const INT_MIN = -2147483648; // -2^(bits-1)
 const INT_WRAP = 4294967296; // 2^(bits)
 
 function Mips() {
-    this.mem = new Array();
     this.reg = new Array();
-	this.memsize = 1024; // Memory size in bytes (aka this.mem.length() / 4)
-	for(var i=0;i<(this.memsize/4);i++) this.mem[i] = 0;
 	for(var i=0;i<31;i++) this.reg[i] = 0;
 	this.reg[31] = 0x08FFFFFFF;
     this.PC = 0;
@@ -23,26 +20,6 @@ function Mips() {
 		this.state = 1;
         alert("EXCEPTION: " + str);
     }
-    this.tlblookup = function(addr) {
-		if(addr % 4 != 0) {
-				return this.mipsexception("UNALIGNED ACCESS");
-		}
-		if(addr > this.memsize) {
-				return this.mipsexception("YOU SHALL NOT PASS (the end of memory)");
-		}
-        return addr / 4;
-    } 
-	// Load a program into memory
-	this.load = function(arr, addr) {
-			if(addr % 4 != 0) {
-					return this.mipsexception("UNALIGNED LOAD");
-			}
-			var offset = parseInt(addr) / 4;
-			for(key in arr) {
-					//addr loading not here
-					this.mem[parseInt(key)+offset] = arr[key]
-			}
-	}
 	this.u_int = function(x) {
 			var r = parseInt(x);
 			if(isNaN(r)) {
@@ -75,7 +52,7 @@ function Mips() {
 			if(this.PC == 0x08FFFFFFF) {
 					return this.mipsexception("CPU HALTED");
 			}
-        var op = this.u_int(this.mem[this.tlblookup(this.PC)]);
+        var op = this.u_int(MMU.read(this.PC));
         this.PC = this.u_int(this.PC + 4);
 		this.reg[0] = 0;
         if(op === 0) {
@@ -92,10 +69,10 @@ function Mips() {
         var i = (op & 0x00000FFFF);
         switch(topbits){
         case 0x023: //lw
-            cpu.reg[t] = cpu.mem[cpu.tlblookup(cpu.reg[s] + i)];
+            cpu.reg[t] = MMU.read(cpu.reg[s] + i)];
 			return "lw $" + t + ", " + i + "($" + s + ")";
         case 0x02B: // sw
-            cpu.mem[cpu.tlblookup(cpu.reg[s] + i)] = cpu.reg[t];
+			MMU.write(cpu.reg[s] + i, cpu.reg[t]);
 			return "sw $" + t + ", " + i + "($" + s + ")";
         case 0x04: //beq
             if(cpu.s_reg(s) == cpu.s_reg(t)) {
@@ -144,7 +121,7 @@ function Mips() {
    		return "divu $" + s + ", $" + t;
        case 0x014: //lis
    		// PC has already been incremented, load next word
-   		cpu.reg[d] = cpu.mem[cpu.tlblookup(cpu.PC)];
+   		cpu.reg[d] = MMU.read(cpu.PC)];
 		cpu.PC += 4; // skip data we just loaded
    		return "lis $" + d; 
    	case 0x010: //mfhi $d
