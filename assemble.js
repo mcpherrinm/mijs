@@ -26,9 +26,9 @@ encodeInstr = function(instr){
 		instr = instr.replace(/^\s+/,'').split(/;/,1)[0];
 		//opcode is the first thing on the line
 		var opcode = instr.split(/\s+/, 1);
-		var line   = cs241mips[opcode];
+		var line   = opcodes[opcode];
 		if(typeof(line) == "undefined") return 0;
-		return line[0] | line[1](instr);
+		return line.wordmask | line.argformat(instr);
 }
 
 assemble = function(asm) {

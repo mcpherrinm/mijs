@@ -226,12 +226,14 @@ var instructions = [
 },
 ]
 
+opcodes = new Array();
+wordmask = new Array();
 // Turn that into maps for constant time lookups
 // At least I think; I assume JS stores stuff sanely.
-for x in instructions {
-	opcode[instructions[x].opcode] = instructions[x];
+for (x in instructions) {
+	opcodes[instructions[x].opcode] = instructions[x];
 }
 
-for x in instructions {
+for (x in instructions) {
 	wordmask[instructions[x].wordmask] = instructions[x];
 }
