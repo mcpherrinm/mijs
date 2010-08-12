@@ -11,10 +11,10 @@ const INT_WRAP = 4294967296; // 2^(bits)
 function Mips() {
     this.mem = new Array();
     this.reg = new Array();
-	this.memsize = 1024; // Memory size IN WORDS (aka this.mem.length())
-	for(var i=0;i<this.memsize;i++) this.mem[i] = 0;
+	this.memsize = 1024; // Memory size in bytes (aka this.mem.length() / 4)
+	for(var i=0;i<(this.memsize/4);i++) this.mem[i] = 0;
 	for(var i=0;i<31;i++) this.reg[i] = 0;
-	this.reg[31] = 0x0FFFFFFFF;
+	this.reg[31] = 0x08FFFFFFF;
     this.PC = 0;
     this.hi = 0;
     this.lo = 0;
@@ -27,23 +27,22 @@ function Mips() {
 		if(addr % 4 != 0) {
 				return this.mipsexception("UNALIGNED ACCESS");
 		}
-		if(addr / 4 > this.memsize) {
-				return this.mipsexception("YOU MAY NOT PASS (the end of memory)");
+		if(addr > this.memsize) {
+				return this.mipsexception("YOU SHALL NOT PASS (the end of memory)");
 		}
         return addr / 4;
-    }
+    } 
+	// Load a program into memory
 	this.load = function(arr, addr) {
 			if(addr % 4 != 0) {
 					return this.mipsexception("UNALIGNED LOAD");
 			}
-			var offset = addr / 4;
+			var offset = parseInt(addr) / 4;
 			for(key in arr) {
 					//addr loading not here
-					this.mem[key] = arr[key]
+					this.mem[parseInt(key)+offset] = arr[key]
 			}
 	}
-    this.fixoverflow =  function(x) { return x & 0x0FFFFFFFF;}
-
 	this.u_int = function(x) {
 			var r = parseInt(x);
 			if(isNaN(r)) {
@@ -53,6 +52,7 @@ function Mips() {
 				return (r % UINT_MAX) + UINT_MAX;
 			}
 			return r % UINT_MAX;
+	}
 	this.u_reg = function(x) { return this.u_int(this.reg[x])}
 	this.s_int= function(x) {
 			var r = parseInt(x);
@@ -72,14 +72,14 @@ function Mips() {
 			if(this.state != 0) {
 					return this.mipsexception("CPU STATE HAZY, PLEASE RESET");
 			}
-			if(this.PC == 0x0FFFFFFFF) {
+			if(this.PC == 0x08FFFFFFF) {
 					return this.mipsexception("CPU HALTED");
 			}
         var op = this.u_int(this.mem[this.tlblookup(this.PC)]);
-        this.PC += 4;
+        this.PC = this.u_int(this.PC + 4);
 		this.reg[0] = 0;
         if(op === 0) {
-            return "NOP"; // nop
+            return "NOP"; // nop is a special case'd instruction cause im cool
         }
 
 		//Decoding bits of instruction that might be of interest
@@ -92,94 +92,93 @@ function Mips() {
         var i = (op & 0x00000FFFF);
         switch(topbits){
         case 0x023: //lw
-            this.reg[t] = this.mem[this.tlblookup(this.reg[s] + i)];
+            cpu.reg[t] = cpu.mem[cpu.tlblookup(cpu.reg[s] + i)];
 			return "lw $" + t + ", " + i + "($" + s + ")";
         case 0x02B: // sw
-            this.mem[this.tlblookup(this.reg[s] + i)] = this.reg[t];
+            cpu.mem[cpu.tlblookup(cpu.reg[s] + i)] = cpu.reg[t];
 			return "sw $" + t + ", " + i + "($" + s + ")";
-        case 0x04:
-            //beq
-            if(this.s_reg(s) == this.s_reg(t)) {
-                this.PC += i*4;
+        case 0x04: //beq
+            if(cpu.s_reg(s) == cpu.s_reg(t)) {
+                cpu.PC += i*4;
             }
 			return "BEQ $" + t + ", $" + s + " " + i; 
         case 0x05: //bne
-            if(this.s_reg(s) != this.s_reg(t)) {
-                this.PC += i*4;
+            if(cpu.s_reg(s) != cpu.s_reg(t)) {
+                cpu.PC += i*4;
             }
 			return "BNE $" + t + ", $" + s + " " + i;
         case 0:
-            switch(lowbits){
-            case 0x020: //Add
-					this.reg[d] = 
-							this.s_int( this.s_reg(s)+
-									    this.s_reg(t));
-				return "add $" + d + ", $" + s + ", $" + t;
-            case 0x022: //sub
-					this.reg[d] = 
-							this.s_int( this.s_reg(s)
-									  - this.s_reg(t));
-				return "sub $" + d + ", $" + s + ", $" + t;
-            case 0x018: //mult
-                var rslt = this.s_reg(s) * this.s_reg(t);
-                this.lo = rslt & 0x000000000FFFFFFFF;
-                this.hi = rslt & 0x0FFFFFFFF00000000;
-				return "mult $" + s + ", $" + t;
-            case 0x019: //multu
-				var rslt= this.u_reg(s) * this.u_reg(t);
-                this.lo = rslt & 0x000000000FFFFFFFF;
-                this.hi = rslt & 0x0FFFFFFFF00000000;
-				return "multu $" + s + ", $" + t;
-            case 0x01A: //div
-				var n = this.s_reg(s);
-				var d = this.s_reg(t);
-				this.hi = n % d;
-                this.hi = (n - this.hi ) / d;
-                var rslt= (n - (n % d) ) / d;
-				return "div $" + s + ", $" + t;
-            case 0x01B: //divu
-				var n = this.u_reg(s);
-				var d = this.u_reg(t);
-				this.hi = n % d;
-                this.hi = (n - this.hi ) / d;
-				return "divu $" + s + ", $" + t;
-            case 0x014: //lis
-				// PC has already been incremented, load next word
-				this.reg[d] = this.mem[this.tlblookup(this.PC)];
-                this.PC += 4; // skip data we just loaded
-				return "lis $" + d; 
-			case 0x0: //mfhi $d
-				this.reg[d] = this.hi;
-				return "mfhi $" + d;
-			case 0x0: //mflo $d
-				this.reg[d] = this.lo;
-				return "mflo $" + d;
-            case 0x02A: //slt
-				if(this.s_reg(s)) < this.s_reg(t))) {
-						this.reg[d] = 1;
-				} else {
-						this.reg[d] = 0;
-				}
-				return "slt $" + d + ", $" + s + ", $" + t;
-            case 0x02B: //sltu
-				if(this.u_reg(s)) < this.u_reg(t))) {
-						this.reg[d] = 1;
-				} else {
-						this.reg[d] = 0;
-				}
-				return "sltu $" + d + ", $" + s + ", $" + t;
-            case 0x09: //jalr
-                this.reg[31] = this.PC;
-                this.PC = this.u_reg(s);
-				return "jalr $" + s;
-            case 0x08: //jr
-                this.PC = this.u_reg(s));
-				return "jr $" + s;
-            default:
-                return this.mipsexception("OP: Illegal R instruction: " + op);
-            }
+       switch(lowbits){
+       case 0x020: //Add
+   			cpu.reg[d] = 
+   					cpu.s_int( cpu.s_reg(s)+
+   							    cpu.s_reg(t));
+   		return "add $" + d + ", $" + s + ", $" + t;
+       case 0x022: //sub
+   			cpu.reg[d] = 
+   					cpu.s_int( cpu.s_reg(s)
+   							  - cpu.s_reg(t));
+   		return "sub $" + d + ", $" + s + ", $" + t;
+       case 0x018: //mult
+           var rslt = cpu.s_reg(s) * cpu.s_reg(t);
+           cpu.lo = rslt & 0x000000000FFFFFFFF;
+           cpu.hi = rslt & 0x0FFFFFFFF00000000;
+   		return "mult $" + s + ", $" + t;
+       case 0x019: //multu
+   		var rslt= cpu.u_reg(s) * cpu.u_reg(t);
+           cpu.lo = rslt & 0x000000000FFFFFFFF;
+           cpu.hi = rslt & 0x0FFFFFFFF00000000;
+   		return "multu $" + s + ", $" + t;
+       case 0x01A: //div
+   		var n = cpu.s_reg(s);
+   		var d = cpu.s_reg(t);
+   		cpu.hi = n % d;
+           cpu.hi = (n - cpu.hi ) / d;
+           var rslt= (n - (n % d) ) / d;
+   		return "div $" + s + ", $" + t;
+       case 0x01B: //divu
+   		var n = cpu.u_reg(s);
+   		var d = cpu.u_reg(t);
+   		cpu.hi = n % d;
+           cpu.hi = (n - cpu.hi ) / d;
+   		return "divu $" + s + ", $" + t;
+       case 0x014: //lis
+   		// PC has already been incremented, load next word
+   		cpu.reg[d] = cpu.mem[cpu.tlblookup(cpu.PC)];
+		cpu.PC += 4; // skip data we just loaded
+   		return "lis $" + d; 
+   	case 0x010: //mfhi $d
+   		cpu.reg[d] = cpu.hi;
+   		return "mfhi $" + d;
+   	case 0x012: //mflo $d
+   		cpu.reg[d] = cpu.lo;
+   		return "mflo $" + d;
+       case 0x02A: //slt
+   		if(cpu.s_reg(s) < cpu.s_reg(t)) {
+   				cpu.reg[d] = 1;
+   		} else {
+   				cpu.reg[d] = 0;
+   		}
+   		return "slt $" + d + ", $" + s + ", $" + t;
+       case 0x02B: //sltu
+   		if(cpu.u_reg(s) < cpu.u_reg(t)) {
+   				cpu.reg[d] = 1;
+   		} else {
+   				cpu.reg[d] = 0;
+   		}
+   		return "sltu $" + d + ", $" + s + ", $" + t;
+       case 0x09: //jalr
+           cpu.reg[31] = cpu.PC;
+           cpu.PC = cpu.u_reg(s);
+   		return "jalr $" + s;
+       case 0x08: //jr
+           cpu.PC = cpu.u_reg(s);
+   		return "jr $" + s;
+       default:
+           return cpu.mipsexception("OP: Illegal R instruction: " + op);
+       }
         default:
-                return this.mipsexception("OP: Illegal I instruction: ");
+                return cpu.mipsexception("OP: Illegal I instruction: ");
         }
     }
 }
