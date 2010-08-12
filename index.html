@@ -31,7 +31,7 @@
 			loader = function(form, cpu, mmu) {
 					mmu.load(assemble(form.program.value), 0);
 					cpu.PC = 0;
-					document.getElementById("mem").innerHtml = mmu.physical;
+					document.getElementById("mem").textContent = mmu.physical;
 			}
 
         window.onload = function() {
