@@ -67,95 +67,16 @@ function Mips() {
         var t = (op & 0x0001F0000) >> 16;
         var d = (op & 0x00000F800) >> 11;
         var i = (op & 0x00000FFFF);
-        switch(topbits){
-        case 0x023: //lw
-            cpu.reg[t] = mmu.read(cpu.reg[s] + i);
-			return "lw $" + t + ", " + i + "($" + s + ")";
-        case 0x02B: // sw
-			mmu.write(cpu.reg[s] + i, cpu.reg[t]);
-			return "sw $" + t + ", " + i + "($" + s + ")";
-        case 0x04: //beq
-            if(cpu.s_reg(s) == cpu.s_reg(t)) {
-                cpu.PC += i*4;
-            }
-			return "BEQ $" + t + ", $" + s + " " + i; 
-        case 0x05: //bne
-            if(cpu.s_reg(s) != cpu.s_reg(t)) {
-                cpu.PC += i*4;
-            }
-			return "BNE $" + t + ", $" + s + " " + i;
-        case 0:
-       switch(lowbits){
-       case 0x020: //Add
-   			cpu.reg[d] = 
-   					cpu.s_int( cpu.s_reg(s)+
-   							    cpu.s_reg(t));
-   		return "add $" + d + ", $" + s + ", $" + t;
-       case 0x022: //sub
-   			cpu.reg[d] = 
-   					cpu.s_int( cpu.s_reg(s)
-   							  - cpu.s_reg(t));
-   		return "sub $" + d + ", $" + s + ", $" + t;
-       case 0x018: //mult
-           var rslt = cpu.s_reg(s) * cpu.s_reg(t);
-           cpu.lo = rslt & 0x000000000FFFFFFFF;
-           cpu.hi = rslt & 0x0FFFFFFFF00000000;
-   		return "mult $" + s + ", $" + t;
-       case 0x019: //multu
-   		var rslt= cpu.u_reg(s) * cpu.u_reg(t);
-           cpu.lo = rslt & 0x000000000FFFFFFFF;
-           cpu.hi = rslt & 0x0FFFFFFFF00000000;
-   		return "multu $" + s + ", $" + t;
-       case 0x01A: //div
-   		var n = cpu.s_reg(s);
-   		var d = cpu.s_reg(t);
-   		cpu.hi = n % d;
-           cpu.hi = (n - cpu.hi ) / d;
-           var rslt= (n - (n % d) ) / d;
-   		return "div $" + s + ", $" + t;
-       case 0x01B: //divu
-   		var n = cpu.u_reg(s);
-   		var d = cpu.u_reg(t);
-   		cpu.hi = n % d;
-           cpu.hi = (n - cpu.hi ) / d;
-   		return "divu $" + s + ", $" + t;
-       case 0x014: //lis
-   		// PC has already been incremented, load next word
-   		cpu.reg[d] = mmu.read(cpu.PC);
-		cpu.PC += 4; // skip data we just loaded
-   		return "lis $" + d; 
-   	case 0x010: //mfhi $d
-   		cpu.reg[d] = cpu.hi;
-   		return "mfhi $" + d;
-   	case 0x012: //mflo $d
-   		cpu.reg[d] = cpu.lo;
-   		return "mflo $" + d;
-       case 0x02A: //slt
-   		if(cpu.s_reg(s) < cpu.s_reg(t)) {
-   				cpu.reg[d] = 1;
-   		} else {
-   				cpu.reg[d] = 0;
-   		}
-   		return "slt $" + d + ", $" + s + ", $" + t;
-       case 0x02B: //sltu
-   		if(cpu.u_reg(s) < cpu.u_reg(t)) {
-   				cpu.reg[d] = 1;
-   		} else {
-   				cpu.reg[d] = 0;
-   		}
-   		return "sltu $" + d + ", $" + s + ", $" + t;
-       case 0x09: //jalr
-           cpu.reg[31] = cpu.PC;
-           cpu.PC = cpu.u_reg(s);
-   		return "jalr $" + s;
-       case 0x08: //jr
-           cpu.PC = cpu.u_reg(s);
-   		return "jr $" + s;
-       default:
-           return cpu.mipsexception("OP: Illegal R instruction: " + op);
-       }
-        default:
-                return cpu.mipsexception("OP: Illegal I instruction: ");
-        }
+
+		// the instruction set has two tables depending on what bits distinguish
+		// which instruction it is. Ideally, this could be generalized a bit more
+		// with an "instruction mask" from the argformat and just matching on it.
+		if(topbits) {
+			return CS241MIPS.topbits[topbits](cpu, s, t, i);
+		} else if(lowbits) {
+			return CS241MIPS.lowbits[lowbits](cpu, s, t, i);
+		} else {
+			return cpu.mipsexception("Illegal Opcode");
+		}
     }
 }
