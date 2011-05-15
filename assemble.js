@@ -3,7 +3,7 @@ encodeInstr = function(instr){
 		instr = instr.replace(/^\s+/,'').split(/;/,1)[0];
 		//opcode is the first thing on the line
 		var opcode = instr.split(/\s+/, 1);
-		var line   = opcodes[opcode];
+		var line   = CS241MIPS.opcodes[opcode];
 		if(typeof(line) == "undefined") return 0;
 		return line.wordmask | line.argformat(instr);
 }

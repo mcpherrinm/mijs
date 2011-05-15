@@ -228,17 +228,17 @@ var CS241MIPS = new function() {
 	]
 
 	this.opcodes = {};
-	this.topbits = {};
+	this.lowbits = {};
 	this.topbits = {};
 
 	for (x in instructions) {
 		var i = instructions[x]
-			opcodes[i.opcode] = i;
+			this.opcodes[i.opcode] = i;
 		if(i.topbits) {
-			topbits[i.topbits] = i.implfn;
+			this.topbits[i.topbits] = i.implfn;
 		}
 		if(i.lowbits) {
-			lowbits[i.topbits] = i.implfn;
+			this.lowbits[i.lowbits] = i.implfn;
 		}
 	}
 
