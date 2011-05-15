@@ -71,6 +71,7 @@ function Mips() {
 		// the instruction set has two tables depending on what bits distinguish
 		// which instruction it is. Ideally, this could be generalized a bit more
 		// with an "instruction mask" from the argformat and just matching on it.
+		alert("Top: " + topbits + ", low:" + lowbits);
 		if(topbits) {
 			return CS241MIPS.topbits[topbits](cpu, s, t, i);
 		} else if(lowbits) {

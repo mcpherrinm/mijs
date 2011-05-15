@@ -50,7 +50,7 @@ var CS241MIPS = new function() {
 	} ,
 	{
 			opcode:		"jr",
-			lowbits:	0x08,
+			wordmask:	0x08,
 			argformat:	s,
 			implfn:		function(cpu, s) {
 				cpu.PC = cpu.u_reg(s);
@@ -59,7 +59,7 @@ var CS241MIPS = new function() {
 	},
 	{
 			opcode:		"jalr",
-			lowbits:	0x09,
+			wordmask:	0x09,
 			argformat:	s,
 			implfn:		function(cpu, s) {
 				cpu.reg[31] = cpu.PC;
@@ -69,7 +69,7 @@ var CS241MIPS = new function() {
 	},
 	{
 			opcode:		"mfhi",
-			lowbits:	0x010,
+			wordmask:	0x010,
 			argformat:	d,
 			implfn:		function(cpu, d) {
 				cpu.reg[d] = cpu.hi;
@@ -78,7 +78,7 @@ var CS241MIPS = new function() {
 	},
 	{
 			opcode:		"mflo",
-			lowbits:	0x012,
+			wordmask:	0x012,
 			argformat:	d,
 			implfn:		function(cpu, d) {
 				cpu.reg[d] = cpu.lo;
@@ -87,7 +87,7 @@ var CS241MIPS = new function() {
 	},
 	{
 			opcode:		"lis",
-			lowbits:	0x014,
+			wordmask:	0x014,
 			argformat:	d,
 			implfn:		function(cpu, d) {
 				cpu.reg[d] = cpu.tlbmem(cpu.PC);
@@ -97,7 +97,7 @@ var CS241MIPS = new function() {
 	},
 	{
 			opcode:		"mult",
-			lowbits:	0x018,
+			wordmask:	0x018,
 			argformat:	st,
 			implfn:		function() {
 				var rslt = cpu.s_reg(s) * cpu.s_reg(t);
@@ -108,7 +108,7 @@ var CS241MIPS = new function() {
 	},
 	{
 			opcode:		"multu",
-			lowbits:	0x019,
+			wordmask:	0x019,
 			argformat:	st,
 			implfn:		function(cpu, s, t) {
 				var rslt= cpu.u_reg(s) * cpu.u_reg(t);
@@ -119,7 +119,7 @@ var CS241MIPS = new function() {
 	},
 	{
 			opcode:		"div",
-			lowbits:	0x01A,
+			wordmask:	0x01A,
 			argformat:	st,
 			implfn:		function(cpu, s, t) {
 				var n = cpu.s_reg(s);
@@ -131,7 +131,7 @@ var CS241MIPS = new function() {
 	},
 	{
 			opcode:		"divu",
-			lowbits:	0x01B,
+			wordmask:	0x01B,
 			argformat:	st,
 			implfn:		function(cpu, s, t) {
 				var n = cpu.u_reg(s);
@@ -143,7 +143,7 @@ var CS241MIPS = new function() {
 	},
 	{
 			opcode:		"add",
-			lowbits:	0x000000020,
+			wordmask:	0x000000020,
 			argformat:	dst,
 			implfn:		function(cpu, d, s, t) {
 				cpu.reg[d] = cpu.s_int(cpu.s_reg(s) + cpu.s_reg(t));
@@ -152,7 +152,7 @@ var CS241MIPS = new function() {
 	},
 	{
 			opcode:		"sub",
-			lowbits:	0x000000022,
+			wordmask:	0x000000022,
 			argformat:	dst,
 			implfn:		function(cpu, d, s, t) {
 				cpu.reg[d] = cpu.s_int( cpu.s_reg(s) - cpu.s_reg(t));
@@ -161,7 +161,7 @@ var CS241MIPS = new function() {
 	},
 	{
 			opcode:		"slt",
-			lowbits:	0x00000002A,
+			wordmask:	0x00000002A,
 			argformat:	dst,
 			implfn:		function(cpu, d, s, t) {
 				if(cpu.u_reg(s) < cpu.u_reg(t)) {
@@ -174,7 +174,7 @@ var CS241MIPS = new function() {
 	},
 	{
 			opcode:		"sltu",
-			lowbits:	0x00000002B,
+			wordmask:	0x00000002B,
 			argformat:	dst,
 			implfn:		function(cpu, d, s, t) {
 				if(cpu.u_reg(s) < cpu.u_reg(t)) {
@@ -233,13 +233,13 @@ var CS241MIPS = new function() {
 
 	for (x in instructions) {
 		var i = instructions[x]
-			this.opcodes[i.opcode] = i;
 		if(i.topbits) {
 			this.topbits[i.topbits] = i.implfn;
+			i.wordmask = i.topbits << 26;
+		} else if(i.wordmask) {
+			this.lowbits[i.wordmask] = i.implfn;
 		}
-		if(i.lowbits) {
-			this.lowbits[i.lowbits] = i.implfn;
-		}
+		this.opcodes[i.opcode] = i;
 	}
 
 }
