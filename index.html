@@ -22,21 +22,21 @@
 				}
 		</style>
 
-        <script type="text/javascript" src="cpu.js"></script>
         <script type="text/javascript" src="mmu.js"></script>
+        <script type="text/javascript" src="cpu.js"></script>
         <script type="text/javascript" src="assemble.js"></script>
         <script type="text/javascript" src="cs241mips.js"></script>
     <script>
 
-			loader = function(form, cpu, mmu) {
-					mmu.load(assemble(form.program.value), 0);
+			loader = function(form, cpu) {
+					cpu.mmu.load(assemble(form.program.value), 0);
 					cpu.PC = 0;
-					document.getElementById("mem").textContent = mmu.physical;
+					document.getElementById("mem").textContent = cpu.mmu.physical;
 			}
 
         window.onload = function() {
             cpu = new Mips();
-			mmu = new MMU();
+			cpu.mmu = new MMU();
 			form = document.getElementById("control");
 				form.r1.value= cpu.reg[1];
 				form.r2.value= cpu.reg[2];
@@ -142,7 +142,7 @@
 				form.pc.value= cpu.PC;
 				form.hi.value= cpu.lo;
 				form.lo.value= cpu.hi;
-				document.getElementById("mem").textContent = mmu.physical;
+				document.getElementById("mem").textContent = cpu.mmu.physical;
 		}
 
     </script>
@@ -212,7 +212,7 @@
 		<form>
 			<div class="clear">
 				<label for="program">Load program</label> <br>
-				<input type="button" value="LOAD" onclick="loader(this.form, cpu, mmu)" >
+				<input type="button" value="LOAD" onclick="loader(this.form, cpu)" >
 				<br>
 				<textarea id="program" cols="80" rows="20">
 lis $5

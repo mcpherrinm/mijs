@@ -90,7 +90,7 @@ var CS241MIPS = new function() {
 			wordmask:	0x014,
 			argformat:	d,
 			implfn:		function(cpu, d) {
-				cpu.reg[d] = cpu.tlbmem(cpu.PC);
+				cpu.reg[d] = cpu.mmu.read(cpu.PC);
 				cpu.PC += 4; // skip data we just loaded
 				return "lis $" + d; 
 			}
@@ -212,7 +212,7 @@ var CS241MIPS = new function() {
 			topbits:	0x23,
 			argformat:	tis,
 			implfn:		function(cpu, s, t, i) {
-				cpu.reg[t] = cpu.mem[cpu.tlblookup(cpu.reg[s] + i)];
+				cpu.reg[t] = cpu.mmu.read(cpu.reg[s] + i);
 				return "lw $" + t + ", " + i + "($" + s + ")";
 			}
 	},
@@ -221,7 +221,7 @@ var CS241MIPS = new function() {
 			topbits:	0x02B,
 			argformat:	tis,
 			implfn:		function(cpu, s, t, i) {
-				cpu.mem[cpu.tlblookup(cpu.reg[s] + i)] = cpu.reg[t];
+				cpu.mmu.write(cpu.reg[s]+1, cpu.reg[t]);
 				return "sw $" + t + ", " + i + "($" + s + ")";
 			}
 	},

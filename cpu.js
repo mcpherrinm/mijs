@@ -52,7 +52,7 @@ function Mips() {
 		if(this.PC == 0x08FFFFFFF) {
 			return this.mipsexception("CPU HALTED");
 		}
-		var op = this.u_int(mmu.read(this.PC));
+		var op = this.u_int(this.mmu.read(this.PC));
 		this.PC = this.u_int(this.PC + 4);
 		this.reg[0] = 0;
 		if(op === 0) {
@@ -73,9 +73,9 @@ function Mips() {
 		// with an "instruction mask" from the argformat and just matching on it.
 		alert("Top: " + topbits + ", low:" + lowbits);
 		if(topbits) {
-			return CS241MIPS.topbits[topbits](cpu, s, t, i);
+			return CS241MIPS.topbits[topbits](this, s, t, i);
 		} else if(lowbits) {
-			return CS241MIPS.lowbits[lowbits](cpu, s, t, i);
+			return CS241MIPS.lowbits[lowbits](this, s, t, i);
 		} else {
 			return cpu.mipsexception("Illegal Opcode");
 		}
