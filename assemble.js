@@ -1,26 +1,3 @@
-/*
-.word i
-add  $d, $s, $t
-sub  $d, $s, $t
-slt  $d, $s, $t
-sltu $d, $s, $t
-mult  $s, $t
-multu $s, $t
-div   $s, $t
-divu  $s, $t
-beq $s, $t, i
-bne $s, $t, i
-lw $t, i($s)
-sw $t, i($s)
-mfhi $d
-mflo $d
-lis $d
-jr $s
-jalr $s
-
-*/
-
-
 encodeInstr = function(instr){
 		// Remove leading whitespace, and trailing comments
 		instr = instr.replace(/^\s+/,'').split(/;/,1)[0];
