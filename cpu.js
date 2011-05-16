@@ -8,6 +8,11 @@ const INT_MAX = 2147483647; // 2^(bits-1) -1
 const INT_MIN = -2147483648; // -2^(bits-1)
 const INT_WRAP = UINT_MAX + 1;
 
+if(!console) {
+	console = {};
+	console.log = function(x) {};
+}
+
 function Mips() {
 	this.reg = new Array();
 	for(var i=0;i<31;i++) this.reg[i] = 0;
@@ -71,7 +76,7 @@ function Mips() {
 		// the instruction set has two tables depending on what bits distinguish
 		// which instruction it is. Ideally, this could be generalized a bit more
 		// with an "instruction mask" from the argformat and just matching on it.
-		alert("Top: " + topbits + ", low:" + lowbits);
+		console.log("Top: " + topbits + ", low:" + lowbits);
 		if(topbits) {
 			return CS241MIPS.topbits[topbits](this, s, t, i);
 		} else if(lowbits) {

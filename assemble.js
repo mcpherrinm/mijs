@@ -5,6 +5,9 @@ encodeInstr = function(instr){
 		var opcode = instr.split(/\s+/, 1);
 		var line   = CS241MIPS.opcodes[opcode];
 		if(typeof(line) == "undefined") return 0;
+		console.log(instr);
+		console.log(line.argformat(instr));
+		console.log(line.wordmask);
 		return line.wordmask | line.argformat(instr);
 }
 
