@@ -7,10 +7,10 @@
 //reading 0xFFFF0004 grabs a byte from stdin
 
 function MMU() {
-	// Array of words
-	this.physical = new Array();
 	// Memory size in bytes
 	this.physicalsize = 1024;
+	this.physical = new ArrayBuffer(this.physicalsize);
+	this.words = new Uint32Array(this.physical);
 	for(var i=0;i<(this.physicalsize/4);i++) this.physical[i] = 0;
     this.tlblookup = function(addr) {
 		if(addr % 4 != 0) {
@@ -23,11 +23,11 @@ function MMU() {
     } 
 
 	this.read = function(addr) {
-		return this.physical[this.tlblookup(addr)];
+		return this.words[this.tlblookup(addr)];
 	}
 
 	this.write = function(addr, data) {
-		this.physical[this.tlblookup(addr)] = cpu.u_int(data);
+		this.words[this.tlblookup(addr)] = cpu.u_int(data);
 	}
 
 	this.load = function(arr, addr) {
@@ -36,7 +36,7 @@ function MMU() {
 			}
 			var offset = parseInt(addr) / 4;
 			for(key in arr) {
-					this.physical[parseInt(key)+offset] = arr[key]
+					this.words[parseInt(key)+offset] = arr[key]
 			}
 	}
 
