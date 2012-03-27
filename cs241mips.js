@@ -15,6 +15,20 @@ var CS241MIPS = new function() {
 		}
 
 	};
+
+	var arg_s = function(op) {
+		return (op & 0x003E00000) >> 21;
+	}
+	var arg_t = function(op) {
+		return (op & 0x0001F0000) >> 16;
+	}
+	arg_d = function(op) {
+		return (op & 0x00000F800) >> 11;
+	}
+	var arg_i = function(op) {
+		return (op & 0x00000FFFF);
+	}
+
 	var i   = function(i) {
 		return parseInt(/\.word\s+(\S+)/.exec(i)[1]); 
 	};
@@ -52,8 +66,9 @@ var CS241MIPS = new function() {
 			opcode:		"jr",
 			wordmask:	0x08,
 			argformat:	s,
-			implfn:		function(cpu, s) {
-				cpu.PC = cpu.u_reg(s);
+			implfn:		function(cpu, op) {
+                                var s = arg_s(op);
+				cpu.PC = cpu.u_reg(arg_s(op));
 				return "jr $" + s;
 			}
 	},
@@ -61,9 +76,10 @@ var CS241MIPS = new function() {
 			opcode:		"jalr",
 			wordmask:	0x09,
 			argformat:	s,
-			implfn:		function(cpu, s) {
+			implfn:		function(cpu, op) {
+                                var s = arg_s(op);
 				cpu.reg[31] = cpu.PC;
-				cpu.PC = cpu.u_reg(s);
+				cpu.PC = cpu.u_reg(arg_s(op));
 				return "jalr $" + s;
 			}
 	},
@@ -71,17 +87,17 @@ var CS241MIPS = new function() {
 			opcode:		"mfhi",
 			wordmask:	0x010,
 			argformat:	d,
-			implfn:		function(cpu, d) {
-				cpu.reg[d] = cpu.hi;
-				return "mfhi $" + d;
+			implfn:		function(cpu, op) {
+				cpu.reg[arg_d(op)] = cpu.hi;
+				return "mfhi $" + arg_d(op);
 			}
 	},
 	{
 			opcode:		"mflo",
 			wordmask:	0x012,
 			argformat:	d,
-			implfn:		function(cpu, d) {
-				cpu.reg[d] = cpu.lo;
+			implfn:		function(cpu, op) {
+				cpu.reg[arg_d(op)] = cpu.lo;
 				return "mflo $" + d;
 			}
 	},
@@ -89,8 +105,11 @@ var CS241MIPS = new function() {
 			opcode:		"lis",
 			wordmask:	0x014,
 			argformat:	d,
-			implfn:		function(cpu, d) {
+			implfn:		function(cpu, op) {
+				var d = arg_d(op);
+                                console.log(" lis arg" + d)
 				cpu.reg[d] = cpu.mmu.read(cpu.PC);
+                                console.log("reg is" + cpu.reg[d])
 				cpu.PC += 4; // skip data we just loaded
 				return "lis $" + d; 
 			}
@@ -99,7 +118,9 @@ var CS241MIPS = new function() {
 			opcode:		"mult",
 			wordmask:	0x018,
 			argformat:	st,
-			implfn:		function() {
+			implfn:		function(cpu, op) {
+				var s = arg_s(op);
+				var t = arg_t(op);
 				var rslt = cpu.s_reg(s) * cpu.s_reg(t);
 				cpu.lo = rslt & 0x000000000FFFFFFFF;
 				cpu.hi = rslt & 0x0FFFFFFFF00000000;
@@ -110,7 +131,9 @@ var CS241MIPS = new function() {
 			opcode:		"multu",
 			wordmask:	0x019,
 			argformat:	st,
-			implfn:		function(cpu, s, t) {
+			implfn:		function(cpu, op) {
+				var s = arg_s(op);
+				var t = arg_t(op);
 				var rslt= cpu.u_reg(s) * cpu.u_reg(t);
 				cpu.lo = rslt & 0x000000000FFFFFFFF;
 				cpu.hi = rslt & 0x0FFFFFFFF00000000;
@@ -121,7 +144,9 @@ var CS241MIPS = new function() {
 			opcode:		"div",
 			wordmask:	0x01A,
 			argformat:	st,
-			implfn:		function(cpu, s, t) {
+			implfn:		function(cpu, op) {
+				var s = arg_s(op)
+				var t = arg_t(op)
 				var n = cpu.s_reg(s);
 				var d = cpu.s_reg(t);
 				cpu.hi = n % d;
@@ -133,7 +158,9 @@ var CS241MIPS = new function() {
 			opcode:		"divu",
 			wordmask:	0x01B,
 			argformat:	st,
-			implfn:		function(cpu, s, t) {
+			implfn:		function(cpu, op) {
+				var s = arg_s(op)
+				var t = arg_t(op)
 				var n = cpu.u_reg(s);
 				var d = cpu.u_reg(t);
 				cpu.hi = n % d;
@@ -145,7 +172,10 @@ var CS241MIPS = new function() {
 			opcode:		"add",
 			wordmask:	0x000000020,
 			argformat:	dst,
-			implfn:		function(cpu, d, s, t) {
+			implfn:		function(cpu, op) {
+				var d = arg_d(op)
+				var s = arg_s(op)
+				var t = arg_t(op)
 				cpu.reg[d] = cpu.s_int(cpu.s_reg(s) + cpu.s_reg(t));
 				return "add $" + d + ", $" + s + ", $" + t;
 			}
@@ -154,7 +184,10 @@ var CS241MIPS = new function() {
 			opcode:		"sub",
 			wordmask:	0x000000022,
 			argformat:	dst,
-			implfn:		function(cpu, d, s, t) {
+			implfn:		function(cpu, op) {
+				var d = arg_d(op)
+				var s = arg_s(op)
+				var t = arg_t(op)
 				cpu.reg[d] = cpu.s_int( cpu.s_reg(s) - cpu.s_reg(t));
 				return "sub $" + d + ", $" + s + ", $" + t;
 			}
@@ -163,7 +196,10 @@ var CS241MIPS = new function() {
 			opcode:		"slt",
 			wordmask:	0x00000002A,
 			argformat:	dst,
-			implfn:		function(cpu, d, s, t) {
+			implfn:		function(cpu, op) {
+				var d = arg_d(op)
+				var s = arg_s(op)
+				var t = arg_t(op)
 				if(cpu.u_reg(s) < cpu.u_reg(t)) {
 					cpu.reg[d] = 1;
 				} else {
@@ -176,7 +212,10 @@ var CS241MIPS = new function() {
 			opcode:		"sltu",
 			wordmask:	0x00000002B,
 			argformat:	dst,
-			implfn:		function(cpu, d, s, t) {
+			implfn:		function(cpu, op) {
+				var d = arg_d(op)
+				var s = arg_s(op)
+				var t = arg_t(op)
 				if(cpu.u_reg(s) < cpu.u_reg(t)) {
 					cpu.reg[d] = 1;
 				} else {
@@ -189,7 +228,10 @@ var CS241MIPS = new function() {
 			opcode:		"beq",
 			topbits:	0x05,
 			argformat:	sti,
-			implfn:		function(cpu, s, t, i) {
+			implfn:		function(cpu, op) {
+				var s = arg_s(op)
+				var t = arg_t(op)
+				var i = arg_i(op)
 				if(cpu.s_reg(s) == cpu.s_reg(t)) {
 					cpu.PC += i*4;
 				}
@@ -200,7 +242,10 @@ var CS241MIPS = new function() {
 			opcode:		"bne",
 			topbits:	0x05,
 			argformat:	sti,
-			implfn:		function(cpu, s, t, i) {
+			implfn:		function(cpu, op) {
+				var s = arg_s(op)
+				var t = arg_t(op)
+				var i = arg_i(op)
 				if(cpu.s_reg(s) != cpu.s_reg(t)) {
 					cpu.PC += i*4;
 				}
@@ -211,7 +256,10 @@ var CS241MIPS = new function() {
 			opcode:		"lw",
 			topbits:	0x23,
 			argformat:	tis,
-			implfn:		function(cpu, s, t, i) {
+			implfn:		function(cpu, op) {
+				var s = arg_s(op)
+				var t = arg_t(op)
+				var i = arg_i(op)
 				cpu.reg[t] = cpu.mmu.read(cpu.reg[s] + i);
 				return "lw $" + t + ", " + i + "($" + s + ")";
 			}
@@ -220,7 +268,10 @@ var CS241MIPS = new function() {
 			opcode:		"sw",
 			topbits:	0x02B,
 			argformat:	tis,
-			implfn:		function(cpu, s, t, i) {
+			implfn:		function(cpu, op) {
+				var s = arg_s(op)
+				var t = arg_t(op)
+				var i = arg_i(op)
 				cpu.mmu.write(cpu.reg[s]+1, cpu.reg[t]);
 				return "sw $" + t + ", " + i + "($" + s + ")";
 			}

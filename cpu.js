@@ -76,11 +76,13 @@ function Mips() {
 		// the instruction set has two tables depending on what bits distinguish
 		// which instruction it is. Ideally, this could be generalized a bit more
 		// with an "instruction mask" from the argformat and just matching on it.
+                console.log("d: " + d)
 		console.log("Top: " + topbits + ", low:" + lowbits);
+                console.log(op.toString(16))
 		if(topbits) {
-			return CS241MIPS.topbits[topbits](this, s, t, i);
+			return CS241MIPS.topbits[topbits](this, op);
 		} else if(lowbits) {
-			return CS241MIPS.lowbits[lowbits](this, s, t, i);
+			return CS241MIPS.lowbits[lowbits](this, op);
 		} else {
 			return cpu.mipsexception("Illegal Opcode");
 		}

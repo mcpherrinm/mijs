@@ -1,7 +1,8 @@
 <!doctype html>
 <html>
+<meta charset="ascii">
     <head>
-			<title>MIPS in Javascript</title>
+	<title>MIPS in Javascript</title>
 		<style type="text/css">
 				form#control div {
 						float: left;
@@ -22,19 +23,22 @@
 				}
 		</style>
 
+
         <script type="text/javascript" src="mmu.js"></script>
         <script type="text/javascript" src="cpu.js"></script>
         <script type="text/javascript" src="assemble.js"></script>
         <script type="text/javascript" src="cs241mips.js"></script>
+
+        <script src="../hex/hex.js"></script>
     <script>
 
-			loader = function(form, cpu) {
-					cpu.mmu.load(assemble(form.program.value), 0);
-					cpu.PC = 0;
-					document.getElementById("mem").textContent = cpu.mmu.physical;
-			}
 
         window.onload = function() {
+            loader = function(form, cpu) {
+                            cpu.mmu.load(assemble(form.program.value), 0);
+                            cpu.PC = 0;
+                            hex.render(cpu.mmu.physical, document.getElementById("hexdump"));
+            }
             cpu = new Mips();
 			cpu.mmu = new MMU();
 			form = document.getElementById("control");
@@ -142,7 +146,7 @@
 				form.pc.value= cpu.PC;
 				form.hi.value= cpu.lo;
 				form.lo.value= cpu.hi;
-				document.getElementById("mem").textContent = cpu.mmu.physical;
+                            hex.render(cpu.mmu.physical, document.getElementById("hexdump"));
 		}
 
     </script>
@@ -152,7 +156,7 @@
 				<h2>MIPS In JavaScript</h2>
 				<p> This is an implementation of
 				<a href="http://www.student.cs.uwaterloo.ca/~cs241/">CS241 MIPS</a>
-			   	in Javascript. Maybe It'll get more features later. </p>
+				in Javascript. Maybe It'll get more features later. </p>
 				<h2>How to use</h2>
 				<p>Type a program into the box below, then press the LOAD button</p>
 				<p>Press the step button until it terminates. Note the registers
@@ -224,7 +228,7 @@ sub $2, $5, $9
 				</textarea> <br>
 		</form>
 		<h3> Contents of memory: </h3>
-		<div id="mem"> </div>
+                <table id="hexdump"></table>
 	</div>
 </body>
 </html>
