@@ -22,7 +22,7 @@ var CS241MIPS = new function() {
 	var arg_t = function(op) {
 		return (op & 0x0001F0000) >> 16;
 	}
-	arg_d = function(op) {
+	var arg_d = function(op) {
 		return (op & 0x00000F800) >> 11;
 	}
 	var arg_i = function(op) {
@@ -32,8 +32,8 @@ var CS241MIPS = new function() {
 	var i   = function(i) {
 		return parseInt(/\.word\s+(\S+)/.exec(i)[1]); 
 	};
-	var tis = function(i) {
-		var b = /\$([0-9]+),\s*([0-9]+)\(\$([0-9]+)\)/.exec(i);
+	tis = function(i) {
+		var b = /\$([0-9]+),\s*(-?[0-9]+)\(\$([0-9]+)\)/.exec(i);
 		return encode(b[1], b[3], 0) & parseInt(b[2]);
 	};
 	var sti = function(i) {
@@ -61,6 +61,7 @@ var CS241MIPS = new function() {
 	{	// .word isn't a real instruction
 			opcode:		".word",
 				argformat:	i,
+				implfn: function() {alert("fuck");}
 	} ,
 	{
 			opcode:		"jr",

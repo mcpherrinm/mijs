@@ -23,10 +23,16 @@ function MMU() {
     } 
 
 	this.read = function(addr) {
+                if(addr == 0xFFFF0004) {
+                  return parseInt(prompt("byte"))
+                }
 		return this.words[this.tlblookup(addr)];
 	}
 
 	this.write = function(addr, data) {
+                if(addr == 0xFFFF000C) {
+                  alert(data)
+                }
 		this.words[this.tlblookup(addr)] = cpu.u_int(data);
 	}
 

@@ -68,19 +68,16 @@ function Mips() {
 		//topbits then possibly low bits determine opcode
 		var topbits = (op & 0x0FC000000) >> 26;
 		var lowbits = (op & 0x03F);
-		var s = (op & 0x003E00000) >> 21;
-		var t = (op & 0x0001F0000) >> 16;
-		var d = (op & 0x00000F800) >> 11;
-		var i = (op & 0x00000FFFF);
 
 		// the instruction set has two tables depending on what bits distinguish
 		// which instruction it is. Ideally, this could be generalized a bit more
 		// with an "instruction mask" from the argformat and just matching on it.
-                console.log("d: " + d)
 		console.log("Top: " + topbits + ", low:" + lowbits);
                 console.log(op.toString(16))
 		if(topbits) {
-			return CS241MIPS.topbits[topbits](this, op);
+                        var f= CS241MIPS.topbits[topbits]
+                        console.log(f)
+			return f(this, op);
 		} else if(lowbits) {
 			return CS241MIPS.lowbits[lowbits](this, op);
 		} else {
