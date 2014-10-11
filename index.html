@@ -33,121 +33,58 @@
     <script>
 
 
-        window.onload = function() {
-            loader = function(form, cpu) {
-                            cpu.mmu.load(assemble(form.program.value), 0);
-                            cpu.PC = 0;
-                            hex.render(cpu.mmu.physical, document.getElementById("hexdump"));
-            }
-            cpu = new Mips();
-			cpu.mmu = new MMU();
-			form = document.getElementById("control");
-				form.r1.value= cpu.reg[1];
-				form.r2.value= cpu.reg[2];
-				form.r3.value= cpu.reg[3];
-				form.r4.value= cpu.reg[4];
-				form.r5.value= cpu.reg[5];
-				form.r6.value= cpu.reg[6];
-				form.r7.value= cpu.reg[7];
-				form.r8.value= cpu.reg[8];
-				form.r9.value= cpu.reg[9];
-				form.r10.value= cpu.reg[10];
-				form.r11.value= cpu.reg[11];
-				form.r12.value= cpu.reg[12];
-				form.r13.value= cpu.reg[13];
-				form.r14.value= cpu.reg[14];
-				form.r15.value= cpu.reg[15];
-				form.r16.value= cpu.reg[16];
-				form.r17.value= cpu.reg[17];
-				form.r19.value= cpu.reg[19];
-				form.r20.value= cpu.reg[20];
-				form.r21.value= cpu.reg[21];
-				form.r22.value= cpu.reg[22];
-				form.r23.value= cpu.reg[23];
-				form.r24.value= cpu.reg[24];
-				form.r25.value= cpu.reg[25];
-				form.r26.value= cpu.reg[26];
-				form.r27.value= cpu.reg[27];
-				form.r28.value= cpu.reg[28];
-				form.r29.value= cpu.reg[29];
-				form.r30.value= cpu.reg[30];
-				form.r31.value= cpu.reg[31];
-				form.pc.value= cpu.PC;
-				form.hi.value= cpu.lo;
-				form.lo.value= cpu.hi;
+    window.onload = function() {
+      loader = function(form, cpu) {
+        cpu.mmu.load(assemble(form.program.value), 0);
+        cpu.PC = 0;
+        hex.render(cpu.mmu.physical, document.getElementById("hexdump"));
+      }
+      cpu = new Mips();
+      cpu.mmu = new MMU();
+      form = document.getElementById("control");
+
+      // Create register forms:
+      var AN = function(base, id, theclass, value) {
+        var span = document.createElement('span');
+        span.innerHTML = ["<label for="," >", "</label> <input class="+theclass+" value="+value+" id=\"","\"></br>"].join(id);
+        base.appendChild(span);
+      }
+
+      var regs = document.getElementById("registers");
+      var guy = document.createElement('div');
+      regs.appendChild(guy);
+
+      AN(guy, 'PC', 'PC', cpu.PC);
+      AN(guy, 'HI', 'HI', cpu.hi);
+      AN(guy, 'LO', 'LO', cpu.lo);
+
+      for(var i = 0; i < 32; i++) {
+        if(i % 8 == 0) {
+          var guy = document.createElement('div');
+          regs.appendChild(guy);
         }
-		
-		process = function(form) {
-				cpu.reg[1] = parseInt(form.r1.value);
-				cpu.reg[2] = parseInt(form.r2.value);
-				cpu.reg[3] = parseInt(form.r3.value);
-				cpu.reg[4] = parseInt(form.r4.value);
-				cpu.reg[5] = parseInt(form.r5.value);
-				cpu.reg[6] = parseInt(form.r6.value);
-				cpu.reg[7] = parseInt(form.r7.value);
-				cpu.reg[8] = parseInt(form.r8.value);
-				cpu.reg[9] = parseInt(form.r9.value);
-				cpu.reg[10] = parseInt(form.r10.value);
-				cpu.reg[11] = parseInt(form.r11.value);
-				cpu.reg[12] = parseInt(form.r12.value);
-				cpu.reg[13] = parseInt(form.r13.value);
-				cpu.reg[14] = parseInt(form.r14.value);
-				cpu.reg[15] = parseInt(form.r15.value);
-				cpu.reg[16] = parseInt(form.r16.value);
-				cpu.reg[17] = parseInt(form.r17.value);
-				cpu.reg[18] = parseInt(form.r18.value);
-				cpu.reg[19] = parseInt(form.r19.value);
-				cpu.reg[20] = parseInt(form.r20.value);
-				cpu.reg[21] = parseInt(form.r21.value);
-				cpu.reg[22] = parseInt(form.r22.value);
-				cpu.reg[23] = parseInt(form.r23.value);
-				cpu.reg[24] = parseInt(form.r24.value);
-				cpu.reg[25] = parseInt(form.r25.value);
-				cpu.reg[26] = parseInt(form.r26.value);
-				cpu.reg[27] = parseInt(form.r27.value);
-				cpu.reg[28] = parseInt(form.r28.value);
-				cpu.reg[29] = parseInt(form.r29.value);
-				cpu.reg[30] = parseInt(form.r30.value);
-				cpu.reg[31] = parseInt(form.r31.value);
-				cpu.PC = parseInt(form.pc.value);
-				cpu.hi = parseInt(form.hi.value);
-				cpu.lo = parseInt(form.lo.value);
-				document.getElementById("instr").textContent = cpu.step();
-				form.r1.value= cpu.reg[1];
-				form.r2.value= cpu.reg[2];
-				form.r3.value= cpu.reg[3];
-				form.r4.value= cpu.reg[4];
-				form.r5.value= cpu.reg[5];
-				form.r6.value= cpu.reg[6];
-				form.r7.value= cpu.reg[7];
-				form.r8.value= cpu.reg[8];
-				form.r9.value= cpu.reg[9];
-				form.r10.value= cpu.reg[10];
-				form.r11.value= cpu.reg[11];
-				form.r12.value= cpu.reg[12];
-				form.r13.value= cpu.reg[13];
-				form.r14.value= cpu.reg[14];
-				form.r15.value= cpu.reg[15];
-				form.r16.value= cpu.reg[16];
-				form.r17.value= cpu.reg[17];
-				form.r19.value= cpu.reg[19];
-				form.r20.value= cpu.reg[20];
-				form.r21.value= cpu.reg[21];
-				form.r22.value= cpu.reg[22];
-				form.r23.value= cpu.reg[23];
-				form.r24.value= cpu.reg[24];
-				form.r25.value= cpu.reg[25];
-				form.r26.value= cpu.reg[26];
-				form.r27.value= cpu.reg[27];
-				form.r28.value= cpu.reg[28];
-				form.r29.value= cpu.reg[29];
-				form.r30.value= cpu.reg[30];
-				form.r31.value= cpu.reg[31];
-				form.pc.value= cpu.PC;
-				form.hi.value= cpu.lo;
-				form.lo.value= cpu.hi;
-                            hex.render(cpu.mmu.physical, document.getElementById("hexdump"));
-		}
+        AN(guy, 'r' + i, 'R', cpu.reg[i]);
+      }
+
+      process = function(form) {
+        var reggies = document.querySelector('input.R');
+        console.log(reggies.length);
+        for(var i = 1; i < 32; i++) {
+          cpu.reg[i] = parseInt(reggies.value);
+        }
+        cpu.PC = parseInt(document.getElementById('PC'));
+        cpu.hi = parseInt(document.getElementById('HI'));
+        cpu.lo = parseInt(document.getElementById('LO'));
+        document.getElementById("instr").textContent = cpu.step();
+        for(var i = 1; i < 32; i++) {
+          reggies.value = cpu.reg[i];
+        }
+        document.getElementById('PC') = cpu.PC;
+        document.getElementById('HI') = cpu.hi;
+        document.getElementById('LO') = cpu.lo;
+        hex.render(cpu.mmu.physical, document.getElementById("hexdump"));
+      }
+    }
 
     </script>
 </head>
@@ -156,59 +93,19 @@
 				<h2>MIPS In JavaScript</h2>
 				<p> This is an implementation of
 				<a href="http://www.student.cs.uwaterloo.ca/~cs241/">CS241 MIPS</a>
-				in Javascript. Maybe It'll get more features later. </p>
+				in Javascript.</p>
 				<h2>How to use</h2>
 				<p>Type a program into the box below, then press the LOAD button</p>
 				<p>Press the step button until it terminates. Note the registers
 				and memory changes. The instruction just evaluated is printed next
 				to the STEP button.</p>
+        <p>Input and output are taken from their respective boxes</p>
 
 		<form id="control">
 				<h3>Registers</h3>
-				<div>
-				<label for="pc">PC:</label> <input value="0" id="pc"><br>
-				<label for="hi">HI:</label> <input value="0" id="hi"><br>
-				<label for="lo">LO:</label> <input value="0" id="lo"><br>
-				</div><div>
-				<label for="r0">0:</label> <input value="0" id="r0" disabled /> <br>
-				<label for="r1">1:</label> <input value="0" id="r1" /> <br>
-				<label for="r2">2:</label> <input value="0" id="r2" /> <br>
-				<label for="r3">3:</label> <input value="0" id="r3" /> <br>
-				<label for="r4">4:</label> <input value="0" id="r4" /> <br>
-				<label for="r5">5:</label> <input value="0" id="r5" /> <br>
-				<label for="r6">6:</label> <input value="0" id="r6" /> <br>
-				<label for="r7">7:</label> <input value="0" id="r7" /> <br>
-				</div><div>
-				<label for="r8">8:</label> <input value="0" id="r8" /> <br>
-				<label for="r9">9:</label> <input value="0" id="r9" /> <br>
-				<label for="r10">10:</label> <input value="0" id="r10" /> <br>
-				<label for="r11">11:</label> <input value="0" id="r11" /> <br>
-				<label for="r12">12:</label> <input value="0" id="r12" /> <br>
-				<label for="r13">13:</label> <input value="0" id="r13" /> <br>
-				<label for="r14">14:</label> <input value="0" id="r14" /> <br>
-				<label for="r15">15:</label> <input value="0" id="r15" /> <br>
-				</div><div>
-				<label for="r16">16:</label> <input value="0" id="r16" /> <br>
-				<label for="r17">17:</label> <input value="0" id="r17" /> <br>
-				<label for="r18">18:</label> <input value="0" id="r18" /> <br>
-				<label for="r19">19:</label> <input value="0" id="r19" /> <br>
-				<label for="r20">20:</label> <input value="0" id="r20" /> <br>
-				<label for="r21">21:</label> <input value="0" id="r21" /> <br>
-				<label for="r22">22:</label> <input value="0" id="r22" /> <br>
-				<label for="r23">23:</label> <input value="0" id="r23" /> <br>
-				</div><div>
-				<label for="r24">24:</label> <input value="0" id="r24" /> <br>
-				<label for="r25">25:</label> <input value="0" id="r25" /> <br>
-				<label for="r26">26:</label> <input value="0" id="r26" /> <br>
-				<label for="r27">27:</label> <input value="0" id="r27" /> <br>
-				<label for="r28">28:</label> <input value="0" id="r28" /> <br>
-				<label for="r29">29:</label> <input value="0" id="r29" /> <br>
-				<label for="r30">30:</label> <input value="0" id="r30" /> <br>
-				<label for="r31">31:</label> <input value="0" id="r31" /> <br>
-			</div>
+      <div id="registers"></div>
 			<div class="clear">
-				<input type="button" value="STEP"
-				onClick="process(this.form)" />
+				<input type="button" value="STEP" onclick="process(this.form)" />
 				<span id="instr"> </span>
 			</div>
 		</form>
